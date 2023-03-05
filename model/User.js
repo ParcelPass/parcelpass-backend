@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema(
         balance: {
             type: Number,
             required: true,
-            default: 0
+            default: 100
         },
         savedEmissions: {
             type: Number, 

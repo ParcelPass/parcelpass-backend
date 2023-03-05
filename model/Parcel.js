@@ -2,13 +2,19 @@ const mongoose = require('mongoose');
 
 const parcelSchema = new mongoose.Schema(
     {
-        name: {
+        startLocation: {
             type: String,
             required: true,
-            max: 255,
-            min: 3
+            max: 1024,
+            min: 6
         },
-        description: {
+        endLocation: {
+            type: String,
+            required: true,
+            max: 1024,
+            min: 6
+        },
+        content: {
             type: String,
             required: true,
             max: 1024,
@@ -28,18 +34,6 @@ const parcelSchema = new mongoose.Schema(
             type: Boolean,
             required: true,
             default: false
-        },
-        startLocation: {
-            type: String,
-            required: true,
-            max: 1024,
-            min: 6
-        },
-        endLocation: {
-            type: String,
-            required: true,
-            max: 1024,
-            min: 6
         }
     }
 );

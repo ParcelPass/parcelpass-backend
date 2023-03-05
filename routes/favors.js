@@ -1,72 +1,37 @@
 const router = require("express").Router();
 const verify = require("./verifyJWTToken");
-const Favor = require("../model/Favor");
+const Favor = require("../model/Parcel");
 const User = require("../model/User");
 var moment = require('moment');
 var datejs = require('datejs');
 // Validate register and login fields
-const { favorValidation } = require("../validation/favorValidation");
 
-const getValidStartTime = () => {
-    const nowDateObj = new Date(Date.now());
-    // console.log(date);
-    var oldDateObj = moment(nowDateObj).subtract(60, 'm').toDate();
-    return oldDateObj;
-};
-
-// Get a Favor by Favor ID
-router.get("/byCategory", verify, async (req, res) => {
-    try {
-        let category = req.query.category;
-        let validDate = getValidStartTime();
-        if (!category) {
-            res.status(400).send("Wrong Query Paramaters");
-            return;
-        }
-        const details = await Favor.find({
-            category: category,
-            status: "Requested",
-            favorRequestTime: {"$gt": validDate}
-        })
-            .where("favoreeId")
-            .ne(req.user._id)
-            .sort({favorRequestTime: 'desc'})
-            .exec();
-        res.send(details);
-    } catch (err) {
-        res.json({ message: err });
-    }
-});
-
-// Get a Favor by Favor ID
+// Get a Parcel by Parcel ID
 router.get("/byId", verify, async (req, res) => {
     try {
-        let favorId = req.query.favorId;
-        if (!favorId) {
+        let parcelId = req.query.parcelId;
+        if (!parcelId) {
             res.status(400).send("Wrong Query Paramaters");
             return;
         }
-        const details = await Favor.findById(favorId).exec();
+        const details = await Parcel.findById(parcelId).exec();
         res.send(details);
     } catch (err) {
         res.json({ message: err });
     }
 });
 
-// Get a Favor by Favoree ID
-router.get("/byFavoreeId", verify, async (req, res) => {
+// Get a Parcel by User ID
+router.get("/byUserId", verify, async (req, res) => {
     try {
-        let favoreeId = req.query.favoreeId;
-        let validDate = getValidStartTime();
-        if (!favoreeId) {
+        let userId = req.user._id;
+        if (!userId) {
             res.status(400).send("Wrong Query Paramaters");
             return;
         }
-        const details = await Favor.find({
-            favoreeId: favoreeId,
-            favorRequestTime: {"$gt": validDate}
+        const details = await Parcel.find({
+            userId: userId
         })
-            .sort({ favorRequestTime: "desc" })
             .exec();
         res.send(details);
     } catch (err) {
@@ -74,18 +39,39 @@ router.get("/byFavoreeId", verify, async (req, res) => {
     }
 });
 
-// Get all Favors with status: 'Requested'
+// Get all Parcels with status: 'not assigned'
 router.get("/", verify, async (req, res) => {
-    let validDate = getValidStartTime();
     try {
-        const details = await Favor.find({ status: "Requested", favorRequestTime: {"$gt": validDate} })
-            .where("favoreeId")
+        const details = await Parcel.find({ status: "not assigned"})
+            .where("userId")
             .ne(req.user._id)
-            .sort({ favorRequestTime: "desc" })
             .exec();
         res.send(details);
     } catch (err) {
         res.json({ message: err });
+    }
+});
+
+// Create a Parcel
+router.post("/", verify, async (req, res) => {
+    // Validating the Data
+    let clientDetails = await User.findById(req.user._id).exec();
+    let balance = clientDetails.balance;
+
+    // Creating a Parcel
+    const parcel = new Parcel({
+        startLocation: req.body.startLocation,
+        endLocation: req.body.endLocation,
+        content: req.body.content,
+        userId: req.user._id,
+        assigned: "not assigned"
+    });
+
+    try {
+        const savedParcel = await parcel.save();
+        res.send({ parcel: parcel._id, userId: req.user._id });
+    } catch (err) {
+        res.status(400).send(err);
     }
 });
 
@@ -121,6 +107,7 @@ router.post("/", verify, async (req, res) => {
     }
 });
 
+//Delete favor
 router.delete("/byId", verify, async (req, res) => {
     try {
         let favorId = req.query.favorId;
@@ -135,19 +122,39 @@ router.delete("/byId", verify, async (req, res) => {
     }
 });
 
+// Parcel status updated
 router.get("/updateStatus", verify, async (req, res) => {
     try {
-        let status = req.query.status;
-        let favorId = req.query.favorId;
+        let status = req.query.assigned;
+        let parcelId = req.query.parcelId;
         console.log(req.query);
-        if (!favorId || !status) {
+        if (!parcelId || !status) {
             res.status(400).send("Wrong Query Paramaters");
             return;
         }
-        const details = await Favor.findByIdAndUpdate(favorId, {
+        const details = await Parcel.findByIdAndUpdate(parcelId, {
             status: status,
         }).exec();
-        res.send("Favor status succesfully changet to " + status);
+        res.send("Parcel status succesfully changed to " + status);
+    } catch (err) {
+        res.json({ message: err });
+    }
+});
+
+// Parcel transport updated
+router.get("/updateTransport", verify, async (req, res) => {
+    try {
+        let transport = req.query.transportId;
+        let parcelId = req.query.parcelId;
+        console.log(req.query);
+        if (!parcelId || !status) {
+            res.status(400).send("Wrong Query Paramaters");
+            return;
+        }
+        const details = await Parcel.findByIdAndUpdate(parcelId, {
+            transportId: transportId,
+        }).exec();
+        res.send("Parcel transportId succesfully changed to " + transportId);
     } catch (err) {
         res.json({ message: err });
     }

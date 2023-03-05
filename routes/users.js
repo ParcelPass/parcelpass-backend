@@ -27,30 +27,31 @@ router.get('/byId', verify, async (req, res) => {
     }
 });
 
-router.get('/updateCoins', verify, async (req, res) => {
+router.get('/updateBalance', verify, async (req, res) => {
     try {
-        let updateCoins = req.query.favorCoins;
+        let updateBalance = req.query.balance;
         let type = req.query.type;
         let userId = req.query.userId;
-        if (!updateCoins || !type || !userId) {
+        if (!updateBalance || !type || !userId) {
             res.status(400).send("Wrong Query Paramaters");
             return;
         }
         const details = await User.findById(userId).exec();
-        const oldCoins = details.favorCoins;
-        let newCoinsInt = parseInt(oldCoins);
-        const updateCoinsInt = parseInt(updateCoins);
+        const oldBalance = details.balance;
+        let newBalance = parseInt(oldBalance);
+        const balanceChange = parseInt(updateBalance);
         if(type == "add")
         {
-            newCoinsInt += updateCoinsInt;
+            newBalance += balanceChange;
         }
         else if(type == "subtract")
         {
-            newCoinsInt -= parseInt(updateCoins);
+            newBalance -= balanceChange;
         }
-        const newCoins = newCoinsInt.toString();
+        
+        newBalance = newCoinsInt.toString();
         const updateDetails = await User.findByIdAndUpdate(userId, {
-            favorCoins: newCoins,
+            balance: newBalance,
         }).exec();
         res.send(updateDetails);
     } catch (err) {

@@ -8,8 +8,7 @@ const transportSchema = new mongoose.Schema(
             ref: 'User'
         },
         transporterId: {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true,   
+            type: mongoose.Schema.Types.ObjectId,  
             ref: 'User'
         },
         route: {
@@ -27,7 +26,7 @@ const transportSchema = new mongoose.Schema(
         },
         packageId: {
             type: mongoose.Schema.Types.ObjectId,
-            required: true,
+            required: true,\
             ref: 'Parcel'
         },
         pickupTime: {
