@@ -22,10 +22,12 @@ router.post("/register", async (req, res) => {
 
     // Checking if email or phone exists
     const emailExist = await User.findOne({ email: req.body.email });
-    const phoneExist = await User.findOne({ phone: req.body.phone });
-    if (emailExist || phoneExist)
-        return res.status(400).send("Email/Phone already exists");
+    if (emailExist)
+    {
+        console.log(emailExist);
+        return res.status(400).send("Email already exists");
 
+    }
     // Hash the passwords
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
@@ -35,7 +37,6 @@ router.post("/register", async (req, res) => {
         name: req.body.name,
         email: req.body.email,
         password: hashedPassword,
-        phone: req.body.phone,
     });
     console.log("Registering User", user);
 

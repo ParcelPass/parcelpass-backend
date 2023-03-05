@@ -42,7 +42,7 @@ router.get("/byUserId", verify, async (req, res) => {
 // Get all Parcels with status: 'not assigned'
 router.get("/", verify, async (req, res) => {
     try {
-        const details = await Parcel.find({ status: "not assigned"})
+        const details = await Parcel.find({ assigned: false})
             .where("userId")
             .ne(req.user._id)
             .exec();
@@ -64,7 +64,7 @@ router.post("/", verify, async (req, res) => {
         endLocation: req.body.endLocation,
         content: req.body.content,
         userId: req.user._id,
-        assigned: "not assigned"
+        assigned: false
     });
 
     try {
