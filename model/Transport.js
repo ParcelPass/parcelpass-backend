@@ -25,7 +25,7 @@ const transportSchema = new mongoose.Schema(
             type: Number,
             required: true
         },
-        packageId: {
+        parcelId: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
             ref: 'Parcel'

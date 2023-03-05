@@ -1,44 +1,52 @@
 const router = require("express").Router();
 const verify = require("./verifyJWTToken");
-const Favor = require("../model/Favor");
-const Trade = require("../model/Trade");
+const Parcel = require("../model/Parcel");
+const Transport = require("../model/Transport");
 
 // Validate trade
-const { tradeValidation } = require("../validation/tradeValidation");
+// const { tradeValidation } = require("../validation/tradeValidation");
 
 // Accept and Post a favor to the trade table 
 router.post("/", verify, async (req, res) => {
     // Validating the Data
-    const { error } = tradeValidation(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+    // const { error } = tradeValidation(req.body);
+    // if (error) return res.status(400).send(error.details[0].message);
 
-    const details = await Favor.findById(req.body.favorId).exec();
-    const favoreeId = details.favoreeId
-    // Creatng a Favor
-    const trade = new Trade({
-        favorerId: req.user._id,
-        favoreeId: favoreeId,
-        favorId: req.body.favorId
+    const details = await Parcel.findById(req.body.parcelId).exec();
+    const clientId = details.userId
+
+    const route = [] // TODO: fix
+
+    // Creatng a Transport
+    const transport = new Transport({
+        transporterId: req.user._id,
+        clientId: clientId,
+        route: route,
+        deliveryStatus: "In Progress",
+        price: 10, 
+        packageId: req.body.parcelId,
+        pickupTime: req.body.pickupTime,
+        expectedDropoffTime: req.body.pickupTime
     });
 
     try {
-        const savedTrade = await trade.save();
-        res.send( trade );
+        const savedTransport = await transport.save();
+        res.send( transport );
     } catch (err) {
         res.status(400).send(err);
     }
 });
 
-// Get a Favor by Favor ID
-router.get("/byFavorId", verify, async (req, res) => {
+// Get a Parcel by Parcel ID
+router.get("/byParcelId", verify, async (req, res) => {
     try {
-        let favorId = req.query.favorId;
-        if (!favorId) {
+        let parcelId = req.query.parcelId;
+        if (!parcelId) {
             res.status(400).send("Wrong Query Paramaters");
             return;
         }
-        const details = await Trade.find({
-            favorId: favorId,
+        const details = await Transport.find({
+            parcelId: parcelId,
         }).exec();
         res.send(details);
     } catch (err) {
@@ -46,16 +54,16 @@ router.get("/byFavorId", verify, async (req, res) => {
     }
 });
 
-// Get a Favor by Favoree ID
-router.get("/byFavoreeId", verify, async (req, res) => {
+// Get a Parcel by ClientId
+router.get("/byClientId", verify, async (req, res) => {
     try {
-        let favoreeId = req.query.favoreeId;
-        if (!favoreeId) {
+        let clientId = req.query.clientId;
+        if (!clientId) {
             res.status(400).send("Wrong Query Paramaters");
             return;
         }
-        const details = await Trade.find({
-            favoreeId: favoreeId,
+        const details = await Transport.find({
+            clientId: clientId,
         }).exec();
         res.send(details);
     } catch (err) {
@@ -63,25 +71,25 @@ router.get("/byFavoreeId", verify, async (req, res) => {
     }
 });
 
-// Get a Favor by Favorer ID
-router.get("/byFavorerId", verify, async (req, res) => {
+// Get a Parcel by Transporter ID
+router.get("/byTransporterId", verify, async (req, res) => {
     try {
-        let favorerId = req.user._id;
-        if (!favorerId) {
+        let transporterId = req.user._id;
+        if (!transporterId) {
             res.status(400).send("Error: User not logged in!");
             return;
         }
-        const details = await Trade.find({
-            favorerId: favorerId,
+        const details = await Transport.find({
+            transporterId: transporterId,
         }).exec();
 
-        var favors = []
+        var parcels = []
         for(let i = 0; i < details.length; i++)
         {
-            const favor = await Favor.findById(details[i].favorId);
-            favors.push(favor);
+            const parcel = await Parcel.findById(details[i].parcelId);
+            parcels.push(parcel);
         }
-        res.send(favors);
+        res.send(parcels);
     } catch (err) {
         res.json({ message: err });
     }
