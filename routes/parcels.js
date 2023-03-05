@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const verify = require("./verifyJWTToken");
-const Favor = require("../model/Parcel");
+const Parcel = require("../model/Parcel");
 const User = require("../model/User");
 var moment = require('moment');
 var datejs = require('datejs');
@@ -72,53 +72,6 @@ router.post("/", verify, async (req, res) => {
         res.send({ parcel: parcel._id, userId: req.user._id });
     } catch (err) {
         res.status(400).send(err);
-    }
-});
-
-//Create a New Favor
-router.post("/", verify, async (req, res) => {
-    // Validating the Data
-    let favoreeDetails = await User.findById(req.user._id).exec();
-    let favorCoins = favoreeDetails.favorCoins;
-    const { error } = favorValidation(req.body, req.user);
-    if (error) {
-        return res.status(400).send(error.details[0].message);
-    }
-    if (favorCoins < req.body.favorCoins) {
-        return res
-            .status(400)
-            .send("Favor Coins can't be more than account balance.");
-    }
-
-    // Creatng a Favor
-    const favor = new Favor({
-        title: req.body.title,
-        description: req.body.description,
-        category: req.body.category,
-        favoreeId: req.user._id,
-        favorCoins: req.body.favorCoins,
-    });
-
-    try {
-        const savedFavor = await favor.save();
-        res.send({ favor: favor._id, favoreeId: req.user._id });
-    } catch (err) {
-        res.status(400).send(err);
-    }
-});
-
-//Delete favor
-router.delete("/byId", verify, async (req, res) => {
-    try {
-        let favorId = req.query.favorId;
-        if (!favorId) {
-            res.status(400).send("Wrong Query Paramaters");
-            return;
-        }
-        const details = await Favor.findByIdAndRemove(favorId).exec();
-        res.send(details);
-    } catch (err) {
-        res.json({ message: err });
     }
 });
 

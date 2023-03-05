@@ -9,8 +9,8 @@ require("dotenv").config();
 // Import Routes
 const authRoute = require("./routes/auth");
 const usersRoute = require("./routes/users");
-const favorsRoute = require("./routes/favors");
-const tradesRoute = require("./routes/trades");
+const parcelsRoute = require("./routes/parcels");
+const transportsRoute = require("./routes/transports");
 
 const corsConfig = {
     origin: process.env.FRONTEND_URL,
@@ -26,8 +26,8 @@ connectDB();
 // Route Middlewares
 app.use("/auth", authRoute);
 app.use("/users", usersRoute);
-app.use("/favors", favorsRoute);
-app.use("/trades", tradesRoute);
+app.use("/parcels", parcelsRoute);
+app.use("/transports", transportsRoute);
 
 app.get("/", function (req, res) {
     res.sendFile(path.join(__dirname, "/index.html"));
