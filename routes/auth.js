@@ -5,25 +5,22 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const verify = require("./verifyJWTToken");
 
-// Validate register and login fields
-const {
-    registerValidation,
-    loginValidation,
-} = require("../validation/authValidation");
+// // Validate register and login fields
+// const {
+//     registerValidation,
+//     loginValidation,
+// } = require("../validation/authValidation");
 
-// VALIDATION
-const Joi = require("@hapi/joi");
+// // VALIDATION
+// const Joi = require("@hapi/joi");
 
 // /auth/register
 router.post("/register", async (req, res) => {
-    // LETS VALIDATE THE DATA
-    const { error } = registerValidation(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
 
     // Checking if email or phone exists
     const emailExist = await User.findOne({ email: req.body.email });
-    const phoneExist = await User.findOne({ phone: req.body.phone });
-    if (emailExist || phoneExist)
+
+    if (emailExist)
         return res.status(400).send("Email/Phone already exists");
 
     // Hash the passwords
@@ -35,7 +32,9 @@ router.post("/register", async (req, res) => {
         name: req.body.name,
         email: req.body.email,
         password: hashedPassword,
-        phone: req.body.phone,
+        balance: 100,
+        savedEmissions: 1000,
+        transportHistory: []
     });
     console.log("Registering User", user);
 
@@ -51,8 +50,8 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
     // Lets Validate the data before we a user
     console.log(req.body);
-    const { error } = loginValidation(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+    // const { error } = loginValidation(req.body);
+    // if (error) return res.status(400).send(error.details[0].message);
 
     // Checking if email exists -> if not then user must register first
     const user = await User.findOne({ email: req.body.email });
@@ -76,7 +75,7 @@ router.post("/login", async (req, res) => {
     // }).send("Successfully Logged In");
 });
 
-router.get("/logout", verify, async (req, res) => {
+router.get("/logout", async (req, res) => {
     try {
         // res.clearCookie("jwt", {
         //     sameSite: "none",
