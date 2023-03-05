@@ -26,7 +26,7 @@ const transportSchema = new mongoose.Schema(
         },
         parcelId: {
             type: mongoose.Schema.Types.ObjectId,
-            required: true,\
+            required: true,
             ref: 'Parcel'
         },
         pickupTime: {

@@ -5,22 +5,25 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const verify = require("./verifyJWTToken");
 
-// // Validate register and login fields
-// const {
-//     registerValidation,
-//     loginValidation,
-// } = require("../validation/authValidation");
+// Validate register and login fields
+const {
+    registerValidation,
+    loginValidation,
+} = require("../validation/authValidation");
 
-// // VALIDATION
-// const Joi = require("@hapi/joi");
+// VALIDATION
+const Joi = require("@hapi/joi");
 
 // /auth/register
 router.post("/register", async (req, res) => {
+    // LETS VALIDATE THE DATA
+    // const { error } = registerValidation(req.body);
+    // if (error) return res.status(400).send(error.details[0].message);
 
     // Checking if email or phone exists
     const emailExist = await User.findOne({ email: req.body.email });
-
-    if (emailExist)
+    const phoneExist = await User.findOne({ phone: req.body.phone });
+    if (emailExist || phoneExist)
         return res.status(400).send("Email/Phone already exists");
 
     // Hash the passwords
@@ -32,9 +35,7 @@ router.post("/register", async (req, res) => {
         name: req.body.name,
         email: req.body.email,
         password: hashedPassword,
-        balance: 100,
-        savedEmissions: 1000,
-        transportHistory: []
+        phone: req.body.phone,
     });
     console.log("Registering User", user);
 
@@ -75,7 +76,7 @@ router.post("/login", async (req, res) => {
     // }).send("Successfully Logged In");
 });
 
-router.get("/logout", async (req, res) => {
+router.get("/logout", verify, async (req, res) => {
     try {
         // res.clearCookie("jwt", {
         //     sameSite: "none",
